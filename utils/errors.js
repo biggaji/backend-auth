@@ -21,4 +21,24 @@ class BadRequestExpection extends BaseError {
   }
 }
 
-export { InputValidationExpection, NotFoundExpection, BadRequestExpection };
+class UnAuthorizedExpection extends BaseError {
+  constructor(message) {
+    super(message);
+    this.statusCode = 401;
+  }
+}
+
+class ForbiddenExpection extends BaseError {
+  constructor(message) {
+    super(message);
+    this.statusCode = 403;
+  }
+}
+
+export {
+  InputValidationExpection,
+  NotFoundExpection,
+  BadRequestExpection,
+  UnAuthorizedExpection,
+  ForbiddenExpection,
+};

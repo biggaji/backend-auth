@@ -12,10 +12,13 @@ export const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 export const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,30}$/;
 
+const execRoles = ['ceo', 'developer', 'cto', 'marketing_executive'];
+const nonExecRoles = ['accountant', 'financial_advisor'];
+
 export default class UserService {
   async createUser(payload) {
     try {
-      const { firstName, lastName, email, password } = payload;
+      const { firstName, lastName, email, password, role } = payload;
 
       if (!firstName || typeof firstName !== 'string') {
         throw new InputValidationExpection('Firstname is required');
@@ -37,6 +40,10 @@ export default class UserService {
         throw new InputValidationExpection('A valid password is required');
       }
 
+      if (!role || typeof role !== 'string') {
+        throw new InputValidationExpection('Choose a role');
+      }
+
       // Check if user exist already
       const userRecord = await userRepo.getUserByEmail(email);
 
@@ -47,11 +54,24 @@ export default class UserService {
       // Hash password
       const hashedPassword = await argon2.hash(password);
 
+      // Assign role to user ["admin", "user"]
+      let assignedRole = role.toLowerCase().replace(/\s+/g, '_');
+
+      // Sorting roles
+      if (execRoles.includes(assignedRole)) {
+        assignedRole = 'admin';
+      } else if (nonExecRoles.includes(assignedRole)) {
+        assignedRole = 'user';
+      } else {
+        throw new BadRequestExpection('Invalid role detected');
+      }
+
       const HydratedPayload = {
         firstName,
         lastName,
         email,
         password: hashedPassword,
+        role: assignedRole,
       };
 
       const newUser = await userRepo.createUserRecord(HydratedPayload);
@@ -93,9 +113,11 @@ export default class UserService {
         throw new BadRequestExpection('Incorrect credentials');
       }
 
-      // Hydrated payload to select custom fields
+      // Hydrated payload to select custom fields to encrypt
       const HydratedUserPayload = {
         userId: userRecord._id,
+        role: userRecord.role,
+        firstName: userRecord.firstName,
       };
 
       const accessToken = jwt.sign(

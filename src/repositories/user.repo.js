@@ -6,13 +6,14 @@ import UserModel from '../models/user.model.js';
 export default class UserRepo {
   async createUserRecord(payload) {
     try {
-      const { firstName, lastName, email, password } = payload;
+      const { firstName, lastName, email, password, role } = payload;
 
       const newUserRecord = new UserModel({
         firstName,
         lastName,
         email,
         password,
+        role,
       });
 
       await newUserRecord.save();
