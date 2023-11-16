@@ -10,7 +10,7 @@ async function createUserController(request, response, next) {
   try {
     const userCreationResponse = await userService.createUser(request.body);
     const { password, ...user } = userCreationResponse;
-    return response.status(201).json({
+    response.status(201).json({
       user,
       message: 'Account created',
     });
@@ -22,7 +22,7 @@ async function createUserController(request, response, next) {
 async function userLoginController(request, response, next) {
   try {
     const accessToken = await userService.authenticate(request.body);
-    return response.status(201).json({
+    response.status(200).json({
       accessToken,
       message: 'Login successful',
     });

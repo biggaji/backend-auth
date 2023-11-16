@@ -14,7 +14,7 @@ import rateLimit from 'express-rate-limit';
 import processError from './src/middlewares/processError.middleware.js';
 
 const app = express();
-await startDB();
+await startDB().then();
 
 app.use(
   cors({
@@ -70,3 +70,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log('API server running', PORT);
 });
+
+export default app;
