@@ -5,6 +5,8 @@ on: [push]
 jobs:
   Test_CI:
     runs-on: ubuntu-latest
+    env:
+      MONGO_URI: ${{ secrets.MONGO_URI }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
