@@ -130,4 +130,22 @@ export default class UserService {
       throw error;
     }
   }
+
+  // Profile Info
+  async me(userId) {
+    try {
+      return await userRepo.getUserById(userId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // All users - only admin is allowed to fetch all users info
+  async users() {
+    try {
+      return await userRepo.fetchUserRecords();
+    } catch (error) {
+      throw error;
+    }
+  }
 }

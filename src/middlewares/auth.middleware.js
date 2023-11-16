@@ -8,7 +8,7 @@ function verifyAuth(request, response, next) {
 
     if (!authHeader) {
       throw new UnAuthorizedExpection(
-        'Access token is missing, please provided your token with the authorization header',
+        'You need to login to continue this operation. Please provided your access-token with the authorization header',
       );
     }
 

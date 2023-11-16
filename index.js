@@ -34,32 +34,6 @@ app.use(limiter);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-// TODO: Move code into its routes and controllers
-app.get('/admin', verifyAuth, async (request, response, next) => {
-  try {
-    const { firstName, role } = request.user;
-    await handleRBAC(['admin'], role);
-    response.status(200).json({
-      message: `Hey ${firstName} `,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// TODO: Move code into its routes and controllers
-app.get('/all', verifyAuth, async (request, response, next) => {
-  try {
-    const { firstName, role } = request.user;
-    await handleRBAC(['admin', 'user'], role);
-    response.status(200).json({
-      message: `Hey ${firstName} `,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
 // Routers
 app.use('/users', userRouter);
 

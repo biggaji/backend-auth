@@ -31,4 +31,20 @@ export default class UserRepo {
       throw error;
     }
   }
+
+  async getUserById(userId) {
+    try {
+      return await UserModel.findOne({ _id: userId }).select('-password');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async fetchUserRecords() {
+    try {
+      return await UserModel.find({}).select('-password');
+    } catch (e) {
+      throw e;
+    }
+  }
 }
