@@ -1,7 +1,7 @@
 /**
  * A collection of request handlers for the user modules
  */
-
+import { redis } from '../../configs/redis.js';
 import handleRBAC from '../../utils/handleRBAC.js';
 import UserService from '../services/user.service.js';
 
@@ -35,9 +35,22 @@ async function userLoginController(request, response, next) {
 async function meController(request, response, next) {
   try {
     const { role, userId } = request.user;
+
     await handleRBAC(['admin', 'user'], role);
 
+    const cacheKey = userId;
+
+    const cachedResult = await redis.get(cacheKey);
+
+    if (cachedResult) {
+      const cacheResultJSON = JSON.parse(cachedResult);
+      response.status(200).json(cacheResultJSON);
+      return;
+    }
+
     const me = await userService.me(userId);
+    await redis.set(cacheKey, JSON.stringify(me), 'EX', 60);
+
     response.status(200).json(me);
   } catch (error) {
     next(error);
@@ -49,7 +62,20 @@ async function fetchUsersController(request, response, next) {
     const { role } = request.user;
     await handleRBAC(['admin'], role);
 
+    const cacheKey = 'users:all';
+
+    const cachedResult = await redis.get(cacheKey);
+
+    if (cachedResult) {
+      const cacheResultJSON = JSON.parse(cachedResult);
+      response.status(200).json(cacheResultJSON);
+      return;
+    }
+
     const users = await userService.users();
+
+    await redis.set(cacheKey, JSON.stringify(users), 'EX', 60);
+
     response.status(200).json(users);
   } catch (error) {
     next(error);

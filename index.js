@@ -24,7 +24,7 @@ app.use(
 
 const limiter = rateLimit({
   windowMs: 60 * 2 * 1000, // 2 minutes window
-  max: 20,
+  max: 500000,
   // The handler method overides the default logic that responds with the error message when the 'max' is exceeded
   handler: (req, res, next, options) =>
     res.status(options.statusCode).json({ message: options.message }),
