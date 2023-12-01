@@ -1,16 +1,12 @@
-import {
-  BadRequestExpection,
-  InputValidationExpection,
-  NotFoundExpection,
-} from '../../utils/errors.js';
+import { BadRequestExpection, InputValidationExpection, NotFoundExpection } from '../../utils/errors.js';
 import UserRepo from '../repositories/user.repo.js';
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
+import { signupDTO, loginDTO } from '../../dtos/userAccountDTO.js';
 
-export const userRepo = new UserRepo();
-export const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-export const passwordRegex =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,30}$/;
+const userRepo = new UserRepo();
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,30}$/;
 
 const execRoles = ['ceo', 'developer', 'cto', 'marketing_executive'];
 const nonExecRoles = ['accountant', 'financial_advisor'];
@@ -18,31 +14,13 @@ const nonExecRoles = ['accountant', 'financial_advisor'];
 export default class UserService {
   async createUser(payload) {
     try {
-      const { firstName, lastName, email, password, role } = payload;
+      const { error, value } = signupDTO.validate(payload);
 
-      if (!firstName || typeof firstName !== 'string') {
-        throw new InputValidationExpection('Firstname is required');
+      if (error) {
+        throw error;
       }
 
-      if (!lastName || typeof lastName !== 'string') {
-        throw new InputValidationExpection('Lastname is required');
-      }
-
-      if (!email || typeof email !== 'string' || !emailRegex.test(email)) {
-        throw new InputValidationExpection('A valid email address is required');
-      }
-
-      if (
-        !password ||
-        typeof password !== 'string' ||
-        !passwordRegex.test(password)
-      ) {
-        throw new InputValidationExpection('A valid password is required');
-      }
-
-      if (!role || typeof role !== 'string') {
-        throw new InputValidationExpection('Choose a role');
-      }
+      const { email, password, role, firstName, lastName } = value;
 
       // Check if user exist already
       const userRecord = await userRepo.getUserByEmail(email);
@@ -83,19 +61,13 @@ export default class UserService {
 
   async authenticate(payload) {
     try {
-      const { email, password } = payload;
+      const { error, value } = loginDTO.validate(payload);
 
-      if (!email || typeof email !== 'string' || !emailRegex.test(email)) {
-        throw new InputValidationExpection('A valid email address is required');
+      if (error) {
+        throw error;
       }
 
-      if (
-        !password ||
-        typeof password !== 'string' ||
-        !passwordRegex.test(password)
-      ) {
-        throw new InputValidationExpection('A valid password is required');
-      }
+      const { email, password } = value;
 
       const userRecord = await userRepo.getUserByEmail(email);
 
@@ -104,10 +76,7 @@ export default class UserService {
       }
 
       // Check password is correct
-      const isCorrectPassword = await argon2.verify(
-        userRecord.password,
-        password,
-      );
+      const isCorrectPassword = await argon2.verify(userRecord.password, password);
 
       if (!isCorrectPassword) {
         throw new BadRequestExpection('Incorrect credentials');
@@ -120,11 +89,7 @@ export default class UserService {
         firstName: userRecord.firstName,
       };
 
-      const accessToken = jwt.sign(
-        HydratedUserPayload,
-        process.env.JWT_SECRET,
-        { expiresIn: '7d' },
-      );
+      const accessToken = jwt.sign(HydratedUserPayload, process.env.JWT_SECRET, { expiresIn: '7d' });
       return accessToken;
     } catch (error) {
       throw error;
